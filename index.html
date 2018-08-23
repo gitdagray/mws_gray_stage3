@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f18200">
+  <link rel="icon" sizes="192x192" href="favicon.ico">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" src="//normalize-css.googlecode.com/svn/trunk/normalize.css" />
+  <link rel="stylesheet" href="css/styles.css">
+  <title>Restaurant Reviews</title>
+</head>
+
+<body>
+  <a href="#filter-results" id="skiptocontent" class="skip-link" tabindex=0>Skip to content</a>
+
+  <header role="banner">
+    <nav role="navigation">
+      <h1><a tabindex=0 href="/">Restaurant Reviews</a></h1>
+    </nav>
+  </header>
+
+  <main id="maincontent" role="main">
+    <section id="map-link-option" role="region" aria-label="Google Map link region.">
+      <div id="map-link-container" role="application" aria-label="Contains link to display a Google Map.">
+        <button tabindex=0 id="map-link" aria-label="Press button to show a map of restaurants.">Show Map</button>
+      </div>
+    </section>
+    <section id="map-container" role="region" aria-label="Google Map region.">
+      <div tabindex=0 id="map" role="application" aria-label="Google Map with restaurants."></div>
+    </section>
+    <section id="filter-results" tabindex=-1 role="region" aria-label="Filter restaurant reviews region.">
+      <div class="filter-options" aria-label="Filter options.">
+        <h2 aria-label="Filter restaurant review results.">Filter Results</h2>
+        <label class="hidden" for="neighborhoods-select">Choose a neighborhood</label>
+        <select id="neighborhoods-select" name="neighborhoods" onchange="updateRestaurants()">
+          <option value="all">All Neighborhoods</option>
+        </select>
+        <label class="hidden" for="neighborhoods-button">Submit your chosen neighborhood</label>
+        <button class="filter-buttons" id="neighborhoods-button" type="button" value="Submit Neighborhood" onclick="updateRestaurants()">Submit</button>
+        <br class="filter-linebreak">
+        <label class="hidden" for="cuisines-select">Choose a cuisine type</label>
+        <select id="cuisines-select" name="cuisines" onchange="updateRestaurants()">
+          <option value="all">All Cuisines</option>
+        </select>
+        <label class="hidden" for="cuisines-button">Submit your chosen cuisine type</label>
+        <button class="filter-buttons" id="cuisines-button" type="button" value="Submit Cuisine type" onclick="updateRestaurants()">Submit</button>
+      </div>
+      <ul id="restaurants-list"></ul>
+    </section>
+  </main>
+
+  <footer id="footer" role="contentinfo">
+    Copyright © <span id="year"></span>
+    <br class="linebreak"> <a href="/" aria-labelledby="footer"><strong>Restaurant Reviews</strong></a>
+    <br class="linebreak"> All Rights Reserved.
+  </footer>
+
+  <script type="application/javascript" charset="utf-8" src="js/dbhelper.js"></script>
+  <script type="application/javascript" charset="utf-8" src="js/main.js"></script>
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA8iJ1AVyPPTXTKUDzwY8jrB04Ndhdxy0Q&callback=mapDecisions"></script>
+
+  <!-- copyright footer js -->
+  <script>
+    var d = new Date();
+    document.getElementById("year").innerHTML = d.getFullYear();
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f18200">
+  <link rel="icon" sizes="192x192" href="favicon.ico">
+  <link rel="manifest" href="manifest.json">
+  <!-- Normalize.css for better cross-browser consistency -->
+  <link rel="stylesheet" src="//normalize-css.googlecode.com/svn/trunk/normalize.css" />
+  <!-- Main CSS file -->
+  <link rel="stylesheet" href="css/styles.css" type="text/css">
+  <title>Restaurant Info</title>
+</head>
+
+<body class="inside">
+  <a href="#restaurant-container" id="skiptocontent" class="skip-link" tabindex=0>Skip to content</a>
+
+  <!-- Beginning header -->
+  <header role="banner">
+    <!-- Beginning nav -->
+    <nav role="navigation">
+      <h1><a tabindex=0 href="/">Restaurant Reviews</a></h1>
+    </nav>
+    <!-- End nav -->
+    <!-- Beginning breadcrumb -->
+    <ul id="breadcrumb" role="navigation">
+      <li><a tabindex=0 href="/" aria-labelledby="breadcrumb">Home</a></li>
+    </ul>
+    <!-- End breadcrumb -->
+  </header>
+  <!-- End header -->
+
+  <!-- Beginning main -->
+  <main id="maincontent" role="main">
+    <!-- Beginning map -->
+
+    <section id="map-container" role="region" aria-label="Google Map section.">
+      <div tabindex=0 id="map" role="application" aria-label="Google Map with restaurant."></div>
+    </section>
+
+    <!-- End map -->
+    <!-- Beginning restaurant -->
+    <section id="restaurant-container" tabindex=-1 role="region" aria-label="Restaurant information section.">
+      <h2 tabindex=0 id="restaurant-name"></h2>
+      <img id="restaurant-img">
+      <p tabindex=0 id="restaurant-cuisine"></p>
+      <p tabindex=0 id="restaurant-address"></p>
+      <a href="#reviews-container" class="skip-link" tabindex=0 aria-label="Skip Hours of Operation table and go to Reviews.">Skip to Reviews</a>
+      <table tabindex=0 id="restaurant-hours" aria-label="Restaurant hours of operation"></table>
+    </section>
+    <!-- end restaurant -->
+    <!-- Beginning reviews -->
+    <section id="reviews-container" tabindex=-1 role="region" aria-label="Restaurant reviews section.">
+      <ul id="reviews-list"></ul>
+    </section>
+    <!-- End reviews -->
+  </main>
+  <!-- End main -->
+
+  <footer id="footer" role="contentinfo">
+    Copyright © <span id="year"></span>
+    <br class="linebreak"> <a href="/" aria-labelledby="footer"><strong>Restaurant Reviews</strong></a>
+    <br class="linebreak"> All Rights Reserved.
+  </footer>
+
+  <!-- Beginning scripts -->
+  <!-- Database helpers -->
+  <script type="text/javascript" src="js/dbhelper.js"></script>
+  <!-- Main javascript file -->
+  <script type="text/javascript" src="js/restaurant_info.js"></script>
+  <!-- Google Maps -->
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA8iJ1AVyPPTXTKUDzwY8jrB04Ndhdxy0Q&libraries=places&callback=initMap"></script>
+  <!-- copyright footer js -->
+  <script>
+    var d = new Date();
+    document.getElementById("year").innerHTML = d.getFullYear();
+  </script>
+</body>
+
+</html>
