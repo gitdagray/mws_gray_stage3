@@ -4,6 +4,9 @@ const dbPromise = idb.open('restaurants-db', 1, db => {
   if (!db.objectStoreNames.contains('restaurants')){
     db.createObjectStore('restaurants', {keyPath: 'id'});
   }
+  if (!db.objectStoreNames.contains('reviews')){
+    db.createObjectStore('reviews', {keyPath: 'id'});
+  }
 });
 
 //write data to idb
@@ -35,10 +38,16 @@ async function getNetworkData(dataURL){
     console.log(dataResponse.status);
     if (dataResponse.status == 200) {
       const responseToData = dataResponse.clone();
-      const restaurants = await responseToData.json();
+      const returnedData = await responseToData.json();
       //console.log('sw.js restaurants: ' + JSON.stringify(restaurants[0].name));
-      for (let key in restaurants){
-        writeData('restaurants',restaurants[key]);
+      if(dataURL.indexOf('http://localhost:1337/restaurants') > -1){
+        for (let key in returnedData){
+          writeData('restaurants',returnedData[key]);
+        }
+      } else if (dataURL.indexOf('http://localhost:1337/reviews') > -1){
+        for (let key in returnedData){
+          writeData('reviews',returnedData[key]);
+        }
       }
       return dataResponse;
     }

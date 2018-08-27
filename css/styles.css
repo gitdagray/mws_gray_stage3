@@ -422,6 +422,17 @@ nav h1 a {
 	max-width: 850px;
 }
 
+#new-review-button {
+  font-size: 18px;
+  line-height: 1.2em;
+  letter-spacing: 3px;
+  display: block;
+  width: 95%;
+  max-width: 800px;
+  margin: 10px auto;
+  border-radius: 10px;
+}
+
 #reviews-list {
   margin: 0;
   padding: 0;
@@ -513,6 +524,46 @@ nav h1 a {
   display: none;
 }
 
+/* ====================== New Review Form ====================== */
+
+#new-review-form {
+  background-color: #333;
+  color: #fff;
+  max-width: 800px;
+  border: 1px solid black;
+  border-radius: 25px;
+  margin: 10px auto;
+  display: none;
+}
+
+#new-review-form * {
+  display: block;
+  margin: 10px auto;
+  text-align: center;
+}
+
+#newRevName, #newRevComments {
+  text-align: left;
+}
+
+#newRevComments {
+  width: 80%;
+  height: auto;
+  min-height: 100px;
+}
+
+#sub-review-button {
+  font-size: 18px;
+  line-height: 1.2em;
+  background-color: #fff;
+  color: #000;
+  letter-spacing: 3px;
+  display: block;
+  width: 60%;
+  margin: 10px auto;
+  border-radius: 10px;
+}
+
 /* =========== Media Queries =========== */
 
 @media screen and (min-width: 485px) {
@@ -528,6 +579,8 @@ nav h1 a {
   #map-link {
     letter-spacing: 10px;
   }
+  #new-review-button {
+    letter-spacing: 6px;
 }
 
 @media screen and (min-height: 565px) {

@@ -80,8 +80,17 @@ self.addEventListener('fetch', event => {
   event.respondWith(async function(){
 
     const url = new URL(event.request.url);
-    const dataURL = 'http://localhost:1337/restaurants';
+    var dataURL;
+    var idbBank;
 
+    //define dataURL
+    if(event.request.url.indexOf('http://localhost:1337/restaurants') > -1){
+        dataURL = 'http://localhost:1337/restaurants';
+        idbBank = 'restaurants';
+    } else if (event.request.url.indexOf('http://localhost:1337/reviews') > -1){
+        dataURL = 'http://localhost:1337/reviews';
+        idbBank = 'reviews';
+    }
     //handle data URL request
     if(event.request.url.indexOf(dataURL) > -1){
 
@@ -92,7 +101,8 @@ self.addEventListener('fetch', event => {
             console.log(dataURL);
             return res; //return network data
           } else { // return idb data
-            return readAllData('restaurants').then(allObjs => {
+              console.log('idb - idbBank: ' + idbBank);
+            return readAllData(idbBank).then(allObjs => {
               if (allObjs.length > 0) {
                 console.log('Offline: getting data from idb...');
                 let payload = new Response(JSON.stringify(allObjs),{ "status" : 200 , "statusText" : "MyCustomResponse!" });

@@ -3,7 +3,7 @@ let reviews;
 var map;
 
 /* Register serviceWorker */
-/*
+
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker
   .register('sw.js')
@@ -14,7 +14,6 @@ if ('serviceWorker' in navigator) {
     console.log(err);
   });
 }
-*/
 
 getFullDate = (ms) => {
   const myDate = new Date(ms);
@@ -181,6 +180,183 @@ fillReviewsHTML = (reviews = self.reviews) => {
   title.setAttributeNode(titleIndex);
   container.appendChild(title);
 
+  const revButton = document.createElement('button');
+  revButton.innerHTML = 'Add A New Review for<br>' + document.getElementById('restaurant-name').innerHTML;
+  const revButtonID = document.createAttribute("id");
+  const revButtonIndex = document.createAttribute("tabindex");
+  const revButtonAria = document.createAttribute("aria-label");
+  revButtonID.value = 'new-review-button';
+  revButtonIndex.value = 0;
+  revButtonAria.value = 'Press button to add a new review for ' + document.getElementById('restaurant-name').innerHTML;
+  revButton.setAttributeNode(revButtonID);
+  revButton.setAttributeNode(revButtonIndex);
+  revButton.setAttributeNode(revButtonAria);
+  container.appendChild(revButton);
+
+  //create form for new restaurant reviews
+  const newRevForm = document.createElement('form');
+  const newRevFormID = document.createAttribute("id");
+  const newRevFormName = document.createAttribute("name");
+  //const newRevFormAction = document.createAttribute("action");
+  const newRevFormOnSubmit = document.createAttribute("onsubmit");
+  newRevFormID.value = 'new-review-form';
+  newRevFormName.value = 'newReviewForm';
+  newRevFormOnSubmit.value = 'validateNewReview()';
+  newRevForm.setAttributeNode(newRevFormID);
+  newRevForm.setAttributeNode(newRevFormID);
+  newRevForm.setAttributeNode(newRevFormName);
+  container.appendChild(newRevForm);
+  //grab form that was just created...
+  const myNewRevForm = document.getElementById('new-review-form');
+
+  //add name label...
+  const newRevNameLabel = document.createElement('label');
+  newRevNameLabel.innerHTML = 'Please enter your name:';
+  const newRevNameLabelID = document.createAttribute("id");
+  const newRevNameLabelFor = document.createAttribute("for");
+  newRevNameLabelID.value = 'newRevNameLabel';
+  newRevNameLabelFor.value = 'newRevName';
+  newRevNameLabel.setAttributeNode(newRevNameLabelID);
+  newRevNameLabel.setAttributeNode(newRevNameLabelFor);
+  myNewRevForm.appendChild(newRevNameLabel);
+  //add name input...
+  const newRevNameInput = document.createElement('input');
+  const newRevNameInputIndex = document.createAttribute("tabindex");
+  const newRevNameInputID = document.createAttribute("id");
+  const newRevNameAria = document.createAttribute("aria-labelledby");
+  const newRevNameInputType = document.createAttribute("type");
+  const newRevNameInputName = document.createAttribute("name");
+  const newRevNameInputPlaceholder = document.createAttribute("placeholder");
+  const newRevNameInputMaxlength = document.createAttribute("maxlength");
+  const newRevNameInputRequired = document.createAttribute("required");
+  newRevNameInputIndex.value = 0;
+  newRevNameInputID.value = 'newRevName';
+  newRevNameAria.value = 'newRevNameLabel';
+  newRevNameInputType.value = 'text';
+  newRevNameInputName.value = 'revname';
+  newRevNameInputPlaceholder.value = 'Your Name';
+  newRevNameInputMaxlength.value = 20;
+  newRevNameInput.setAttributeNode(newRevNameInputIndex);
+  newRevNameInput.setAttributeNode(newRevNameInputID);
+  newRevNameInput.setAttributeNode(newRevNameAria);
+  newRevNameInput.setAttributeNode(newRevNameInputType);
+  newRevNameInput.setAttributeNode(newRevNameInputName);
+  newRevNameInput.setAttributeNode(newRevNameInputPlaceholder);
+  newRevNameInput.setAttributeNode(newRevNameInputMaxlength);
+  newRevNameInput.setAttributeNode(newRevNameInputRequired);
+  myNewRevForm.appendChild(newRevNameInput);
+
+  //add rating label...
+  const newRevRatingLabel = document.createElement('label');
+  newRevRatingLabel.innerHTML = 'Please choose a rating:';
+  const newRevRatingLabelID = document.createAttribute("id");
+  const newRevRatingLabelFor = document.createAttribute("for");
+  newRevRatingLabelID.value = 'newRevRatingLabel';
+  newRevRatingLabelFor.value = 'newRevRating';
+  newRevRatingLabel.setAttributeNode(newRevRatingLabelID);
+  newRevRatingLabel.setAttributeNode(newRevRatingLabelFor);
+  myNewRevForm.appendChild(newRevRatingLabel);
+  //add rating select...
+  const newRevRating = document.createElement('select');
+  const newRevRatingIndex = document.createAttribute("tabindex");
+  const newRevRatingID = document.createAttribute("id");
+  const newRevRatingName = document.createAttribute("name");
+  const newRevRatingAria = document.createAttribute("aria-labelledby");
+  newRevRatingIndex.value = 0;
+  newRevRatingID.value = 'newRevRating';
+  newRevRatingName.value = 'newRevRating';
+  newRevRatingAria.value = 'newRevRatingLabel';
+  newRevRating.setAttributeNode(newRevRatingIndex);
+  newRevRating.setAttributeNode(newRevRatingID);
+  newRevRating.setAttributeNode(newRevRatingName);
+  newRevRating.setAttributeNode(newRevRatingAria);
+  myNewRevForm.appendChild(newRevRating);
+  //grab form that was just created...
+  const myNewRevRating = document.getElementById('newRevRating');
+  //add options for select...
+  const revRating5 = document.createElement('option');
+  const revRating4 = document.createElement('option');
+  const revRating3 = document.createElement('option');
+  const revRating2 = document.createElement('option');
+  const revRating1 = document.createElement('option');
+  revRating5.innerHTML = '5: Awesome!';
+  revRating4.innerHTML = '4: Above Average';
+  revRating3.innerHTML = '3: Average';
+  revRating2.innerHTML = '2: Below Average';
+  revRating1.innerHTML = '1: Awful';
+  const revRating5val = document.createAttribute("value");
+  const revRating4val = document.createAttribute("value");
+  const revRating3val = document.createAttribute("value");
+  const revRating2val = document.createAttribute("value");
+  const revRating1val = document.createAttribute("value");
+  const revRating5sel = document.createAttribute("selected");
+  revRating5val.value = 5;
+  revRating4val.value = 4;
+  revRating3val.value = 3;
+  revRating2val.value = 2;
+  revRating1val.value = 1;
+  revRating5.setAttributeNode(revRating5val);
+  revRating5.setAttributeNode(revRating5sel);
+  revRating4.setAttributeNode(revRating4val);
+  revRating3.setAttributeNode(revRating3val);
+  revRating2.setAttributeNode(revRating2val);
+  revRating1.setAttributeNode(revRating1val);
+  myNewRevRating.appendChild(revRating5);
+  myNewRevRating.appendChild(revRating4);
+  myNewRevRating.appendChild(revRating3);
+  myNewRevRating.appendChild(revRating2);
+  myNewRevRating.appendChild(revRating1);
+
+  //add name label...
+  const newRevCommentsLabel = document.createElement('label');
+  newRevCommentsLabel.innerHTML = 'Review Comments:';
+  const newRevCommentsLabelID = document.createAttribute("id");
+  const newRevCommentsLabelFor = document.createAttribute("for");
+  newRevCommentsLabelID.value = 'newRevCommentsLabel';
+  newRevCommentsLabelFor.value = 'newRevComments';
+  newRevCommentsLabel.setAttributeNode(newRevCommentsLabelID);
+  newRevCommentsLabel.setAttributeNode(newRevCommentsLabelFor);
+  myNewRevForm.appendChild(newRevCommentsLabel);
+  //add comments input...
+  const newRevComments = document.createElement('textarea');
+  const newRevCommentsInputIndex = document.createAttribute("tabindex");
+  const newRevCommentsInputID = document.createAttribute("id");
+  const newRevCommentsAria = document.createAttribute("aria-labelledby");
+  const newRevCommentsInputName = document.createAttribute("name");
+  const newRevCommentsInputMaxlength = document.createAttribute("maxlength");
+  newRevCommentsInputIndex.value = 0;
+  newRevCommentsInputID.value = 'newRevComments';
+  newRevCommentsAria.value = 'newRevCommentsLabel';
+  newRevCommentsInputName.value = 'revcomments';
+  newRevCommentsInputMaxlength.value = 250;
+  newRevComments.setAttributeNode(newRevCommentsInputIndex);
+  newRevComments.setAttributeNode(newRevCommentsInputID);
+  newRevComments.setAttributeNode(newRevCommentsAria);
+  newRevComments.setAttributeNode(newRevCommentsInputName);
+  newRevComments.setAttributeNode(newRevCommentsInputMaxlength);
+  myNewRevForm.appendChild(newRevComments);
+
+  // create submit button
+  const subRevButton = document.createElement('button');
+  subRevButton.innerHTML = 'Submit Review for<br>' + document.getElementById('restaurant-name').innerHTML;
+  const subRevButtonID = document.createAttribute("id");
+  const subRevButtonIndex = document.createAttribute("tabindex");
+  const subRevButtonAria = document.createAttribute("aria-label");
+  subRevButtonID.value = 'sub-review-button';
+  subRevButtonIndex.value = 0;
+  subRevButtonAria.value = 'Press button to submit your review for ' + document.getElementById('restaurant-name').innerHTML;
+  subRevButton.setAttributeNode(subRevButtonID);
+  subRevButton.setAttributeNode(subRevButtonIndex);
+  subRevButton.setAttributeNode(subRevButtonAria);
+  myNewRevForm.appendChild(subRevButton);
+
+  //add toggle for new review button and review form...
+  document.getElementById("new-review-button").addEventListener("click", () => {
+    document.getElementById("new-review-form").style.display = 'block';
+    document.getElementById("new-review-button").style.display = 'none';
+  });
+
+  //get the reviews and display them...
   if (!reviews) {
     const noReviews = document.createElement('p');
     noReviews.innerHTML = 'No reviews yet!';
