@@ -7,6 +7,9 @@ const dbPromise = idb.open('restaurants-db', 1, db => {
   if (!db.objectStoreNames.contains('reviews')){
     db.createObjectStore('reviews', {keyPath: 'id'});
   }
+  if (!db.objectStoreNames.contains('sync-newRev')){
+    db.createObjectStore('sync-newRev', {keyPath: 'id', autoIncrement: true});
+  }
 });
 
 //write data to idb
@@ -24,9 +27,19 @@ function readAllData(store){
     const tx = db.transaction(store,'readonly');
     const st = tx.objectStore(store);
     const allSavedItems = st.getAll();
-    //console.log('allSavedItems: ' + allSavedItems);
     return allSavedItems;
   });
+}
+
+//delete an item from idb
+function deleteAnItem(store, id) {
+  dbPromise
+    .then(db => {
+      const tx = db.transaction(store,'readwrite');
+      const st = tx.objectStore(store);
+      st.clear();
+      return tx.complete;
+    });
 }
 
 //get network data

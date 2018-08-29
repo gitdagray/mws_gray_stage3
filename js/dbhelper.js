@@ -35,7 +35,7 @@ class DBHelper {
    */
   static async fetchReviews(callback) {
 
-    // async await fetch solution - server data
+    // async await fetch solution - all reviews
     try {
       const response = await fetch(DBHelper.REVIEWS_URL);
       //console.log(response);
@@ -71,20 +71,19 @@ class DBHelper {
   /**
    * Fetch reviews by restaurant ID.
    */
-  static fetchReviewsByRestaurantId(restaurant_id, callback) {
-    // fetch all reviews for the restaurant with proper error handling.
-    DBHelper.fetchReviews((error, rev) => {
-      if (error) {
-        callback(error, null);
-      } else {
-        const reviews = rev.filter(r => r.restaurant_id == restaurant_id);
-        if (reviews) { // Got the reviews
-          callback(null, reviews);
-        } else { // Reviews do not exist in the database for this restaurant id
-          callback('Reviews do not exist for this restaurant id', null);
-        }
-      }
-    });
+  static async fetchReviewsByRestaurantId(restaurant_id, callback) {
+
+    // async await fetch solution - specific restaurant reviews
+    try {
+      const response = await fetch('http://localhost:1337/reviews/?restaurant_id=' + restaurant_id);
+      const reviews = await response.json();
+      console.log(reviews);
+      callback(null, reviews);
+    } catch(e) {
+      console.error(e);
+      const error = ('Request failed. ' + e);
+      callback(error, null);
+    }
   }
 
 

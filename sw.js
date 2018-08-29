@@ -76,6 +76,9 @@ self.addEventListener('install', event => {
 // handle fetch requests
 self.addEventListener('fetch', event => {
 
+  //
+  if (event.request.method != 'GET') return;
+
   // Prevent the default, and handle the request ourselves.
   event.respondWith(async function(){
 
@@ -88,8 +91,10 @@ self.addEventListener('fetch', event => {
         dataURL = 'http://localhost:1337/restaurants';
         idbBank = 'restaurants';
     } else if (event.request.url.indexOf('http://localhost:1337/reviews') > -1){
-        dataURL = 'http://localhost:1337/reviews';
+        dataURL = event.request.url;
         idbBank = 'reviews';
+        var currRestID = getTheID(dataURL);
+        console.log('currRestID: ' + currRestID);
     }
     //handle data URL request
     if(event.request.url.indexOf(dataURL) > -1){
@@ -101,11 +106,18 @@ self.addEventListener('fetch', event => {
             console.log(dataURL);
             return res; //return network data
           } else { // return idb data
-              console.log('idb - idbBank: ' + idbBank);
+            console.log('idb - idbBank: ' + idbBank);
             return readAllData(idbBank).then(allObjs => {
               if (allObjs.length > 0) {
+                var ourObjs;
+                if (idbBank == 'reviews'){
+                  ourObjs = allObjs.filter(r => r.restaurant_id == currRestID);
+                } else {
+                  ourObjs = allObjs;
+                }
+                //console.log('ourObjs: ' + JSON.stringify(ourObjs));
                 console.log('Offline: getting data from idb...');
-                let payload = new Response(JSON.stringify(allObjs),{ "status" : 200 , "statusText" : "MyCustomResponse!" });
+                let payload = new Response(JSON.stringify(ourObjs),{ "status" : 200 , "statusText" : "MyCustomResponse!" });
                 return payload;
               }
             }).catch(error => {
@@ -161,3 +173,53 @@ self.addEventListener('fetch', event => {
 
   }()); //end event.respondWith
 }); //end addEventListener
+
+//triggered when sw thinks connectivity is re-established...
+self.addEventListener('sync', (event) => {
+  console.log('sw: sync', event);
+  if (event.tag === 'sync-new-review' || event.tag === 'sync-reviews'){
+    console.log('sw: syncing new reviews');
+    event.waitUntil(
+      readAllData('sync-newRev')
+        .then(async (data) => {
+          for (let dt of data){
+            let dtResponse = await fetch('http://localhost:1337/reviews/',{
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              },
+              body: JSON.stringify({
+                restaurant_id: dt.restaurant_id,
+                name: dt.name,
+                rating: dt.rating,
+                comments: dt.comments
+              })
+            }) //end fetch
+            let mydtReply = await dtResponse.json();
+            console.log('mydtReply: ' + JSON.stringify(mydtReply));
+            if (dtResponse.ok) {
+              deleteAnItem('sync-newRev',dt.id);
+            }
+          } //end for loop
+        })
+        .catch(e => {
+          console.log('Post syncing failed');
+          console.error(e);
+        })
+    );
+  }
+});
+
+/**
+ * Get the restaurant id from page URL.
+ */
+getTheID = (url) => {
+  if (!url)
+    return;
+  let lastTwo = url.slice(-2);
+  if (lastTwo.includes('='))
+    lastTwo = lastTwo.slice(-1);
+  //console.log('lastTwo: ' + lastTwo);
+  return lastTwo;
+}

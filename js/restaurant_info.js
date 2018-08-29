@@ -10,7 +10,7 @@ if ('serviceWorker' in navigator) {
   .then(function(){
     console.log('Service Worker Registered!');
   })
-  .catch(function(err){
+  .catch(err => {
     console.log(err);
   });
 }
@@ -45,13 +45,24 @@ window.initMap = () => {
       google.maps.event.addListenerOnce(map, 'idle', () => {
         document.getElementsByTagName('iframe')[0].title = "Google Maps";
       })
+      fetchRestaurantReviewsFromURL((error, reviews) => {
+        if (error) { // Got an error!
+          console.error(error);
+        }
+      });
+      //fires a sync event every 30 seconds
+      setInterval(syncReviews,30000);
     }
   });
-  fetchRestaurantReviewsFromURL((error, reviews) => {
-    if (error) { // Got an error!
-      console.error(error);
-    }
-  });
+}
+
+//sync event - only fires if online 
+syncReviews = () => {
+  if ('serviceWorker' in navigator && 'SyncManager' in window) {
+    navigator.serviceWorker.ready
+      .then(sw => {return sw.sync.register('sync-reviews')})
+      .catch(err => {console.log(err)});
+  }
 }
 
 /**
@@ -147,12 +158,12 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
  * Get current restaurant from page URL.
  */
 fetchRestaurantReviewsFromURL = (callback) => {
-  if (self.reviews) { // restaurant already fetched!
+  if (self.reviews) { // reviews already fetched!
     callback(null, self.reviews)
     return;
   }
-  const restaurant_id = getParameterByName('id');
-  if (!restaurant_id) { // no id found in URL
+  const restaurant_id = self.restaurant.id;
+  if (!restaurant_id) {
     error = 'No restaurant id in URL'
     callback(error, null);
   } else {
@@ -181,13 +192,13 @@ fillReviewsHTML = (reviews = self.reviews) => {
   container.appendChild(title);
 
   const revButton = document.createElement('button');
-  revButton.innerHTML = 'Add A New Review for<br>' + document.getElementById('restaurant-name').innerHTML;
+  revButton.innerHTML = 'Add A New Review for<br>' + self.restaurant.name;
   const revButtonID = document.createAttribute("id");
   const revButtonIndex = document.createAttribute("tabindex");
   const revButtonAria = document.createAttribute("aria-label");
   revButtonID.value = 'new-review-button';
   revButtonIndex.value = 0;
-  revButtonAria.value = 'Press button to add a new review for ' + document.getElementById('restaurant-name').innerHTML;
+  revButtonAria.value = 'Press button to add a new review for ' + self.restaurant.name;
   revButton.setAttributeNode(revButtonID);
   revButton.setAttributeNode(revButtonIndex);
   revButton.setAttributeNode(revButtonAria);
@@ -208,6 +219,16 @@ fillReviewsHTML = (reviews = self.reviews) => {
   container.appendChild(newRevForm);
   //grab form that was just created...
   const myNewRevForm = document.getElementById('new-review-form');
+
+  //add hidden thank you paragraph
+  const thankYouPara = document.createElement('p');
+  const thankYouIndex = document.createAttribute("tabindex");
+  const thankYouID = document.createAttribute("id");
+  thankYouIndex.value = 0;
+  thankYouID.value = 'thankYou';
+  thankYouPara.setAttributeNode(thankYouIndex);
+  thankYouPara.setAttributeNode(thankYouID);
+  container.appendChild(thankYouPara);
 
   //add name label...
   const newRevNameLabel = document.createElement('label');
@@ -338,13 +359,13 @@ fillReviewsHTML = (reviews = self.reviews) => {
 
   // create submit button
   const subRevButton = document.createElement('button');
-  subRevButton.innerHTML = 'Submit Review for<br>' + document.getElementById('restaurant-name').innerHTML;
+  subRevButton.innerHTML = 'Submit A New Review for<br>' + self.restaurant.name;
   const subRevButtonID = document.createAttribute("id");
   const subRevButtonIndex = document.createAttribute("tabindex");
   const subRevButtonAria = document.createAttribute("aria-label");
   subRevButtonID.value = 'sub-review-button';
   subRevButtonIndex.value = 0;
-  subRevButtonAria.value = 'Press button to submit your review for ' + document.getElementById('restaurant-name').innerHTML;
+  subRevButtonAria.value = 'Press this button to add a new review for ' + self.restaurant.name;
   subRevButton.setAttributeNode(subRevButtonID);
   subRevButton.setAttributeNode(subRevButtonIndex);
   subRevButton.setAttributeNode(subRevButtonAria);
@@ -354,6 +375,36 @@ fillReviewsHTML = (reviews = self.reviews) => {
   document.getElementById("new-review-button").addEventListener("click", () => {
     document.getElementById("new-review-form").style.display = 'block';
     document.getElementById("new-review-button").style.display = 'none';
+  });
+
+  //listen for the new review submit event on the form...
+  document.getElementById("new-review-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const idRevData = self.restaurant.id;
+    const nameRevData = document.getElementById('newRevName').value;
+    const ratingRevData = document.getElementById('newRevRating').value;
+    const commentsRevData = document.getElementById('newRevComments').value;
+
+    if ('serviceWorker' in navigator && 'SyncManager' in window) {
+      navigator.serviceWorker.ready
+      //testing the sendNewReview function
+        .then(sw => {
+          const newReviewData = {
+            "restaurant_id": idRevData,
+            "name": nameRevData,
+            "rating": ratingRevData,
+            "comments": commentsRevData
+          };
+          console.log('newReviewData: ' + JSON.stringify(newReviewData));
+          writeData('sync-newRev', newReviewData)
+            .then(() => sw.sync.register('sync-new-review'))
+            .then(showReviewThankYou(nameRevData))
+            .catch(err => console.log(err));
+        });
+    } else {
+      sendNewReview(); //fallback if no support for SyncManager
+    }
   });
 
   //get the reviews and display them...
@@ -455,4 +506,40 @@ getParameterByName = (name, url) => {
   if (!results[2])
     return '';
   return decodeURIComponent(results[2].replace(/\+/g, ' '));
+}
+
+async function sendNewReview() {
+  try {
+      let idData = self.restaurant.id;
+      let nameData = document.getElementById('newRevName').value;
+      let ratingData = document.getElementById('newRevRating').value;
+      let commentsData = document.getElementById('newRevComments').value;
+
+      const revResponse = await fetch('http://localhost:1337/reviews/',{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          restaurant_id: idData,
+          name: nameData,
+          rating: ratingData,
+          comments: commentsData
+        })
+      })
+
+      const myRevReply = await revResponse.json();
+      console.log('myRevReply: ' + JSON.stringify(myRevReply));
+      showReviewThankYou(nameData);
+    } catch(e) {
+      console.log('Post failed.');
+      console.error(e);
+    }
+}
+
+showReviewThankYou = (name) => {
+  document.getElementById('thankYou').innerHTML = "Thank you for submitting a review " + name + "!";
+  document.getElementById('thankYou').style.display = "block";
+  document.getElementById('new-review-form').style.display = 'none';
 }
