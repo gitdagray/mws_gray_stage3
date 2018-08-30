@@ -177,32 +177,11 @@ self.addEventListener('fetch', event => {
 //triggered when sw thinks connectivity is re-established...
 self.addEventListener('sync', (event) => {
   console.log('sw: sync', event);
-  if (event.tag === 'sync-new-review' || event.tag === 'sync-reviews'){
+  if (event.tag === 'sync-new-review'){
     console.log('sw: syncing new reviews');
     event.waitUntil(
       readAllData('sync-newRev')
-        .then(async (data) => {
-          for (let dt of data){
-            let dtResponse = await fetch('http://localhost:1337/reviews/',{
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-              },
-              body: JSON.stringify({
-                restaurant_id: dt.restaurant_id,
-                name: dt.name,
-                rating: dt.rating,
-                comments: dt.comments
-              })
-            }) //end fetch
-            let mydtReply = await dtResponse.json();
-            console.log('mydtReply: ' + JSON.stringify(mydtReply));
-            if (dtResponse.ok) {
-              deleteAnItem('sync-newRev',dt.id);
-            }
-          } //end for loop
-        })
+        .then(data => postEm(data))
         .catch(e => {
           console.log('Post syncing failed');
           console.error(e);
@@ -210,6 +189,32 @@ self.addEventListener('sync', (event) => {
     );
   }
 });
+
+//must define this async function separately and insert in sync listener
+//so event.waitUntil() resolves
+//and sends the sync event when back online...
+postEm = async(data) => {
+    for (let dt of data){
+      let dtResponse = await fetch('http://localhost:1337/reviews/',{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          restaurant_id: dt.restaurant_id,
+          name: dt.name,
+          rating: dt.rating,
+          comments: dt.comments
+        })
+      }) //end fetch
+      let mydtReply = await dtResponse.json();
+      console.log('mydtReply: ' + JSON.stringify(mydtReply));
+      if (dtResponse.ok) {
+        deleteAnItem('sync-newRev',dt.id);
+      }
+    } //end for loop
+}
 
 /**
  * Get the restaurant id from page URL.

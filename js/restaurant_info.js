@@ -50,19 +50,8 @@ window.initMap = () => {
           console.error(error);
         }
       });
-      //fires a sync event every 30 seconds
-      setInterval(syncReviews,30000);
     }
   });
-}
-
-//sync event - only fires if online 
-syncReviews = () => {
-  if ('serviceWorker' in navigator && 'SyncManager' in window) {
-    navigator.serviceWorker.ready
-      .then(sw => {return sw.sync.register('sync-reviews')})
-      .catch(err => {console.log(err)});
-  }
 }
 
 /**
