@@ -23,13 +23,49 @@ getFullDate = (ms) => {
   return month + '/' + day + '/' + year;
 }
 
+/**
+ * Allow user option to display map in mobile viewports
+ */
+ document.getElementById('map-link').addEventListener('click', (event) => {
+   const disLink = document.getElementById('map-link-option');
+   disLink.style.display = 'none';
+   const mapContain = document.getElementById('map-container');
+   mapContain.style.display = 'block';
+   initMap();
+ });
+
+/**
+ * Map loading decision based upon viewport size
+ */
+mapDecisions = () => {
+ const size = {
+   width: window.innerWidth || document.body.clientWidth,
+   height: window.innerHeight || document.body.clientHeight
+ };
+ //console.log("width: " + size.width);
+ //console.log("height: " + size.height);
+ if (size.width < 801){
+   fetchRestaurantFromURL((error, restaurant) => {
+     if (error) { // Got an error!
+       console.error(error);
+     } else {
+       fillBreadcrumb();
+       fetchRestaurantReviewsFromURL((error, reviews) => {
+         if (error) { // Got an error!
+           console.error(error);
+         }
+       });
+     }
+   })
+ } else {
+   document.getElementById('map-link').click();
+ }
+}
 
 /**
  * Initialize Google map, called from HTML.
  */
 window.initMap = () => {
-  const mapContain = document.getElementById('map-container');
-  mapContain.style.display = 'block';
   fetchRestaurantFromURL((error, restaurant) => {
     if (error) { // Got an error!
       console.error(error);
@@ -83,8 +119,29 @@ fetchRestaurantFromURL = (callback) => {
  * Create restaurant HTML and add it to the webpage
  */
 fillRestaurantHTML = (restaurant = self.restaurant) => {
+  const headlineHolder = document.getElementById('headline-holder');
+
   const name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
+
+  const likeButtonHolder = document.getElementById('like-button-holder');
+
+  //conditional ternary operator
+  const isFave = (restaurant["is_favorite"] && restaurant["is_favorite"].toString() === "true") ? true : false;
+  const likeButton = document.createElement('button');
+  likeButton.className = 'fave-rest-icon';
+  const likeButtonIndex = document.createAttribute("tabindex");
+  likeButtonIndex.value = 0;
+  likeButton.setAttributeNode(likeButtonIndex);
+  const likeButtonAria = document.createAttribute("aria-label");
+  likeButtonAria.value = isFave ? restaurant.name + ' is a favorite.' : restaurant.name + ' is not a favorite.';
+  likeButton.setAttributeNode(likeButtonAria);
+  likeButton.id = 'fave-rest-icon-' + restaurant.id;
+  likeButton.style.background = isFave
+    ? 'url("img/icons/like.svg") no-repeat'
+    : 'url("img/icons/like-not.svg") no-repeat';
+  likeButton.onclick = event => handleLikeButtonClick(restaurant.id,!isFave);
+  likeButtonHolder.append(likeButton);
 
   const address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
@@ -531,4 +588,19 @@ showReviewThankYou = (name) => {
   document.getElementById('thankYou').innerHTML = "Thank you for submitting a review " + name + "!";
   document.getElementById('thankYou').style.display = "block";
   document.getElementById('new-review-form').style.display = 'none';
+}
+
+handleLikeButtonClick = (id,newState) => {
+  const fav = document.getElementById('fave-rest-icon-' + id);
+  self.restaurant["is_favorite"] = newState;
+
+  fav.style.background = newState
+    ? 'url("img/icons/like.svg") no-repeat'
+    : 'url("img/icons/like-not.svg") no-repeat';
+  newState
+    ? fav.setAttribute("aria-label", self.restaurant.name + ' is a favorite.')
+    : fav.setAttribute("aria-label", self.restaurant.name + ' is not a favorite.');
+
+  fav.onclick = event => handleLikeButtonClick(id, !newState);
+  handleFaveClick(id,newState);
 }

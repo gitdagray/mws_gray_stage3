@@ -10,6 +10,9 @@ const dbPromise = idb.open('restaurants-db', 1, db => {
   if (!db.objectStoreNames.contains('sync-newRev')){
     db.createObjectStore('sync-newRev', {keyPath: 'id', autoIncrement: true});
   }
+  if (!db.objectStoreNames.contains('sync-newFav')){
+    db.createObjectStore('sync-newFav', {keyPath: 'id', autoIncrement: true});
+  }
 });
 
 //write data to idb
@@ -40,6 +43,45 @@ function deleteAnItem(store, id) {
       st.clear();
       return tx.complete;
     });
+}
+
+function handleFaveClick(id,newState){
+  console.log('newState: ' + newState);
+  //conditional ternary operator
+  const faveURL = newState.toString() === 'true'
+    ? 'http://localhost:1337/restaurants/' + id + '/?is_favorite=true'
+    : 'http://localhost:1337/restaurants/' + id + '/?is_favorite=false';
+  console.log('faveURL: ' + faveURL);
+
+  //register sync here
+  if ('serviceWorker' in navigator && 'SyncManager' in window) {
+    console.log('sync reg route');
+    navigator.serviceWorker.ready
+    //testing the sendNewReview function
+      .then(sw => {
+        writeData('sync-newFav', {"url": faveURL})
+          .then(() => sw.sync.register('sync-new-fave'))
+          .catch(err => console.log(err));
+      });
+  } else {
+    console.log('fallback route');
+    //fallback function
+    sendNewFave(faveURL,id,newState);
+  }
+}
+
+//fallback function to send fave data
+async function sendNewFave(url,id,newState) {
+  try {
+        const faveResponse = await fetch(url,{
+          method: 'PUT'
+        })
+        const myFaveReply = await faveResponse.json();
+        console.log('myFaveReply: ' + JSON.stringify(myFaveReply));
+      } catch(e) {
+        console.log('Fave failed.');
+        console.error(e);
+      }
 }
 
 //get network data

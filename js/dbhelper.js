@@ -7,10 +7,6 @@ class DBHelper {
     return 'http://localhost:1337/restaurants';
   }
 
-  static get REVIEWS_URL() {
-    return 'http://localhost:1337/reviews';
-  }
-
   /**
    * Fetch all restaurants.
    */
@@ -33,6 +29,7 @@ class DBHelper {
   /**
    * Fetch all reviews.
    */
+   /*
   static async fetchReviews(callback) {
 
     // async await fetch solution - all reviews
@@ -47,7 +44,7 @@ class DBHelper {
       const error = ('Request failed. ' + e);
       callback(error, null);
     }
-  }
+  }*/
 
   /**
    * Fetch a restaurant by its ID.

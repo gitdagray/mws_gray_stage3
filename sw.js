@@ -25,6 +25,8 @@ const STATIC_FILES = [
   '/js/dbhelper.js',
   '/js/main.js',
   '/js/restaurant_info.js',
+  '/img/icons/like.svg',
+  '/img/icons/like-not.svg',
   '/img/icons/app-icon-48x48.png',
   '/img/icons/app-icon-96x96.png',
   '/img/icons/app-icon-192x192.png',
@@ -187,13 +189,25 @@ self.addEventListener('sync', (event) => {
           console.error(e);
         })
     );
-  }
+  } //end if
+  if (event.tag === 'sync-new-fave'){
+    console.log('sw: syncing new faves');
+    event.waitUntil(
+      readAllData('sync-newFav')
+        .then(data => favEm(data))
+        .catch(e => {
+          console.log('Fave syncing failed');
+          console.error(e);
+        })
+    );
+  } //end if
+
 });
 
 //must define this async function separately and insert in sync listener
 //so event.waitUntil() resolves
 //and sends the sync event when back online...
-postEm = async(data) => {
+const postEm = async(data) => {
     for (let dt of data){
       let dtResponse = await fetch('http://localhost:1337/reviews/',{
         method: 'POST',
@@ -216,10 +230,23 @@ postEm = async(data) => {
     } //end for loop
 }
 
+const favEm = async(data) => {
+    for (let dt of data){
+      let dtResponse = await fetch(dt.url,{
+        method: 'PUT'
+      }) //end fetch
+      let mydtReply = await dtResponse.json();
+      console.log('mydtReply: ' + JSON.stringify(mydtReply));
+      if (dtResponse.ok) {
+        deleteAnItem('sync-newFav',dt.id);
+      }
+    } //end for loop
+}
+
 /**
  * Get the restaurant id from page URL.
  */
-getTheID = (url) => {
+const getTheID = (url) => {
   if (!url)
     return;
   let lastTwo = url.slice(-2);

@@ -198,6 +198,23 @@ createRestaurantHTML = (restaurant) => {
   name.setAttributeNode(nameIndex);
   li.append(name);
 
+  //conditional ternary operator
+  const isFave = (restaurant["is_favorite"] && restaurant["is_favorite"].toString() === "true") ? true : false;
+  const likeButton = document.createElement('button');
+  likeButton.className = 'fave-icon';
+  const likeButtonIndex = document.createAttribute("tabindex");
+  likeButtonIndex.value = 0;
+  likeButton.setAttributeNode(likeButtonIndex);
+  const likeButtonAria = document.createAttribute("aria-label");
+  likeButtonAria.value = isFave ? restaurant.name + ' is a favorite.' : restaurant.name + ' is not a favorite.';
+  likeButton.setAttributeNode(likeButtonAria);
+  likeButton.id = 'fave-icon-' + restaurant.id;
+  likeButton.style.background = isFave
+    ? 'url("img/icons/like.svg") no-repeat'
+    : 'url("img/icons/like-not.svg") no-repeat';
+  likeButton.onclick = event => handleLikeButtonClick(restaurant.id,!isFave);
+  li.append(likeButton);
+
   const neighborhood = document.createElement('p');
   neighborhood.innerHTML = restaurant.neighborhood;
   const neighborhoodIndex = document.createAttribute("tabindex");
@@ -235,4 +252,20 @@ addMarkersToMap = (restaurants = self.restaurants) => {
     });
     self.markers.push(marker);
   });
+}
+
+handleLikeButtonClick = (id,newState) => {
+  const fav = document.getElementById('fave-icon-' + id);
+  const idMinusOne = id - 1;
+  self.restaurants[idMinusOne]["is_favorite"] = newState;
+
+  fav.style.background = newState
+    ? 'url("img/icons/like.svg") no-repeat'
+    : 'url("img/icons/like-not.svg") no-repeat';
+  newState
+    ? fav.setAttribute("aria-label", self.restaurants[idMinusOne].name + ' is a favorite.')
+    : fav.setAttribute("aria-label", self.restaurants[idMinusOne].name + ' is not a favorite.');
+
+  fav.onclick = event => handleLikeButtonClick(id, !newState);
+  handleFaveClick(id,newState);
 }
