@@ -1,6 +1,6 @@
 {
   "name": "Udacity Restaurant Reviews Project for MWS ND",
-  "short_name": "Restaurant Reviews",
+  "short_name": "Grub Reviews",
   "start_url": "index.html",
   "scope": ".",
   "display": "standalone",

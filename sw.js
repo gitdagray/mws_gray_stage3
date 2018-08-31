@@ -1,10 +1,10 @@
 /* serviceWorker */
 
 //import idb promised
-importScripts('js/idb.js');
+importScripts('js/idb.min.js');
 
 //import idb scripts
-importScripts('js/util.js');
+importScripts('js/util.min.js');
 
 // name the static cache
 const CACHE_STATIC_NAME = 'static-v1';
@@ -19,12 +19,13 @@ const STATIC_FILES = [
   '/restaurant.html',
   '/manifest.json',
   '/favicon.ico',
-  '/css/styles.css',
-  '/js/idb.js',
-  '/js/util.js',
-  '/js/dbhelper.js',
-  '/js/main.js',
-  '/js/restaurant_info.js',
+  '/css/main.min.css',
+  '/css/restaurant.min.css',
+  '/js/idb.min.js',
+  '/js/util.min.js',
+  '/js/dbhelper.min.js',
+  '/js/main.min.js',
+  '/js/restaurant_info.min.js',
   '/img/icons/like.svg',
   '/img/icons/like-not.svg',
   '/img/icons/app-icon-48x48.png',
