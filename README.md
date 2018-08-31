@@ -1,4 +1,11 @@
-# Steps to complete
+# Restaurants Project - Stage 3
+
+### Notes on Development Environment
+- Serve web app pages with the Python server.
+- The server repository mentioned below is a Node server that provides the data endpoints.
+- During development, both the Python and Node servers can run in separate CLI windows.
+
+## Steps to complete
 #### 1. Fork and clone the server repository. You’ll use this development server to develop your project code.
 Server repository found here:
 ```
