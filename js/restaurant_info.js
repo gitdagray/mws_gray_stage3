@@ -31,40 +31,59 @@ getFullDate = (ms) => {
    disLink.style.display = 'none';
    const mapContain = document.getElementById('map-container');
    mapContain.style.display = 'block';
-   initMap();
  });
 
 /**
  * Map loading decision based upon viewport size
  */
-mapDecisions = () => {
+//mapDecisions = () => {
+window.onload = () => {
  const size = {
    width: window.innerWidth || document.body.clientWidth,
    height: window.innerHeight || document.body.clientHeight
  };
  //console.log("width: " + size.width);
  //console.log("height: " + size.height);
- if (size.width < 801){
-   fetchRestaurantFromURL((error, restaurant) => {
-     if (error) { // Got an error!
-       console.error(error);
-     } else {
-       fillBreadcrumb();
-       fetchRestaurantReviewsFromURL((error, reviews) => {
-         if (error) { // Got an error!
-           console.error(error);
-         }
-       });
-     }
-   })
- } else {
+ if (size.width > 800){
    document.getElementById('map-link').click();
  }
+
+ fetchRestaurantFromURL((error, restaurant) => {
+   if (error) { // Got an error!
+     console.error(error);
+   } else {
+     fillBreadcrumb();
+     initMap(restaurant);
+     fetchRestaurantReviewsFromURL((error, reviews) => {
+       if (error) { // Got an error!
+         console.error(error);
+       }
+     });
+   }
+ })
 }
 
+window.initMap = (restaurant) => {
+  const restMap = document.getElementById('map');
+  const srcMap = document.createAttribute("src");
+  const altMap = document.createAttribute("alt");
+  const indexMap = document.createAttribute("tabindex");
+  const latlngMap = restaurant.latlng.lat + ',' + restaurant.latlng.lng;
+  let mapURL = 'https://maps.googleapis.com/maps/api/staticmap?center=';
+  mapURL = mapURL + latlngMap + '&zoom=16&size=640x640&scale=1&markers=color:red%7C';
+  mapURL = mapURL + latlngMap + '&key=AIzaSyA8iJ1AVyPPTXTKUDzwY8jrB04Ndhdxy0Q';
+  srcMap.value = mapURL;
+  altMap.value = 'A map for ' + restaurant.name;
+  indexMap.value = 0;
+  restMap.setAttributeNode(srcMap);
+  restMap.setAttributeNode(altMap);
+  restMap.setAttributeNode(indexMap);
+}
+
+/* Before going to Static Maps API this was used...
 /**
  * Initialize Google map, called from HTML.
- */
+ *
 window.initMap = () => {
   fetchRestaurantFromURL((error, restaurant) => {
     if (error) { // Got an error!
@@ -88,7 +107,7 @@ window.initMap = () => {
       });
     }
   });
-}
+} */
 
 /**
  * Get current restaurant from page URL.

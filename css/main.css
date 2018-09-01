@@ -148,12 +148,19 @@ nav h1 a {
 
 /* ====================== Map ====================== */
 
-#map {
+#mapInt, #map {
   height: 220px;
   width: 100%;
   background-color: #ccc;
   max-width: 1600px;
   margin: 0 auto;
+  display: none;
+}
+
+#map {
+  display: block;
+  height: 320px;
+  width: 320px;
 }
 
 #map-container {
@@ -311,16 +318,26 @@ nav h1 a {
   }
 }
 
+@media screen and (min-width: 360px) {
+	#map {
+	  height: 360px;
+    width: 360px;
+	}
+}
+
 @media screen and (min-height: 565px) {
-	.inside #map, #map {
+	#mapInt {
 	  height: 320px;
 	}
 }
 
 @media screen and (min-height: 640px) {
-	.inside #map, #map {
+	#mapInt, #map {
 	  height: 420px;
 	}
+  #map {
+    width: 420px;
+  }
 }
 
 @media screen and (min-width: 756px) {

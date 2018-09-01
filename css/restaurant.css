@@ -11,17 +11,6 @@ html, body {
 
 /* ================ General Page Settings ================= */
 
-/*
-.container {
-  display: grid;
-  grid-template-columns: 100%;
-  grid-template-rows: auto auto auto;
-  grid-template-areas:
-      "header"
-      "content"
-      "footer";
-} */
-
 header {
   grid-area: header;
 }
@@ -185,8 +174,9 @@ nav h1 a {
 /* ====================== Map ====================== */
 
 #map {
-  height: 220px;
-  width: 100%;
+  display: block;
+  height: 320px;
+  width: 320px;
   background-color: #ccc;
   max-width: 1600px;
   margin: 0 auto;
@@ -248,9 +238,6 @@ nav h1 a {
 
 .inside #map-container {
   grid-area: map;
-}
-.inside #map {
-	height: 220px;
 }
 
 #restaurant-name {
@@ -507,15 +494,17 @@ nav h1 a {
     letter-spacing: 6px;
 }
 
-@media screen and (min-height: 565px) {
+@media screen and (min-width: 360px) {
 	.inside #map, #map {
-	  height: 320px;
+	  height: 360px;
+    width: 360px;
 	}
 }
 
 @media screen and (min-height: 640px) {
 	.inside #map, #map {
 	  height: 420px;
+    width: 420px;
 	}
 }
 

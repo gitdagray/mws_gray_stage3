@@ -17,6 +17,18 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+window.addEventListener('offline', function(e) {
+  console.log('offline');
+  document.getElementById('map').style.display = 'block';
+  document.getElementById('mapInt').style.display = 'none';
+});
+
+window.addEventListener('online', function(e) {
+  console.log('online');
+});
+
+
+
 /**
  * Allow user option to display map in mobile viewports
  */
@@ -25,7 +37,6 @@ if ('serviceWorker' in navigator) {
    disLink.style.display = 'none';
    const mapContain = document.getElementById('map-container');
    mapContain.style.display = 'block';
-   initMap();
  });
 
  /**
@@ -38,11 +49,19 @@ mapDecisions = () => {
   };
   //console.log("width: " + size.width);
   //console.log("height: " + size.height);
-  if (size.width < 801){
-    updateRestaurants();
-  } else {
+  if (size.width > 800){
     document.getElementById('map-link').click();
   }
+
+  DBHelper.fetchRestaurants((error, restaurants) => {
+    if (error) { // Got an error!
+      console.error(error);
+    } else {
+      initMap(restaurants);
+      fillRestaurantsHTML(restaurants);
+    }
+  });
+
 }
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
@@ -107,15 +126,36 @@ fillCuisinesHTML = (cuisines = self.cuisines) => {
   });
 }
 
+window.initMap = (restaurants) => {
+  const restMap = document.getElementById('map');
+  const srcMap = document.createAttribute("src");
+  const altMap = document.createAttribute("alt");
+  const indexMap = document.createAttribute("tabindex");
+  //const latlngMap = restaurant.latlng.lat + ',' + restaurant.latlng.lng;
+  let mapURL = 'https://maps.googleapis.com/maps/api/staticmap?';
+  mapURL = mapURL + '&size=640x640&scale=1&markers=color:red';
+  restaurants.forEach(restaurant => {
+    mapURL = mapURL + '%7C' + restaurant.latlng.lat + ',' + restaurant.latlng.lng;
+  });
+  mapURL = mapURL + '&key=AIzaSyA8iJ1AVyPPTXTKUDzwY8jrB04Ndhdxy0Q';
+  console.log(mapURL);
+  srcMap.value = mapURL;
+  altMap.value = 'A map showing all the restaurants in the Restaurant Reviews App.';
+  indexMap.value = 0;
+  restMap.setAttributeNode(srcMap);
+  restMap.setAttributeNode(altMap);
+  restMap.setAttributeNode(indexMap);
+}
+
 /**
  * Initialize Google map, called from HTML.
- */
-window.initMap = () => {
+*/
+window.initInteractiveMap = () => {
   let loc = {
     lat: 40.722216,
     lng: -73.987501
   };
-  self.map = new google.maps.Map(document.getElementById('map'), {
+  self.map = new google.maps.Map(document.getElementById('mapInt'), {
     zoom: 12,
     center: loc,
     scrollwheel: false
@@ -126,6 +166,19 @@ window.initMap = () => {
     document.getElementsByTagName('iframe')[0].title = "Google Maps";
   })
 }
+
+const switchMaps = () => {
+  initInteractiveMap();
+  document.getElementById('map').style.display = 'none';
+  document.getElementById('mapInt').style.display = 'block';
+  document.getElementById('map-container').removeEventListener('click',switchMaps);
+  document.getElementById('neighborhoods-select').removeEventListener('click',switchMaps);
+  document.getElementById('cuisines-select').removeEventListener('click',switchMaps);
+}
+
+document.getElementById('map-container').addEventListener('click',switchMaps);
+document.getElementById('neighborhoods-select').addEventListener('click',switchMaps);
+document.getElementById('cuisines-select').addEventListener('click',switchMaps);
 
 /**
  * Update page and map for current restaurants.
@@ -145,7 +198,7 @@ updateRestaurants = () => {
       console.error(error);
     } else {
       resetRestaurants(restaurants);
-      fillRestaurantsHTML();
+      fillRestaurantsHTML(restaurants);
     }
   })
 }
@@ -168,12 +221,12 @@ resetRestaurants = (restaurants) => {
 /**
  * Create all restaurants HTML and add them to the webpage.
  */
-fillRestaurantsHTML = (restaurants = self.restaurants) => {
+fillRestaurantsHTML = (restaurants) => {
   const ul = document.getElementById('restaurants-list');
   restaurants.forEach(restaurant => {
     ul.append(createRestaurantHTML(restaurant));
   });
-  addMarkersToMap();
+  addMarkersToMap(restaurants);
 }
 
 /**
@@ -243,7 +296,7 @@ createRestaurantHTML = (restaurant) => {
 /**
  * Add markers for current restaurants to the map.
  */
-addMarkersToMap = (restaurants = self.restaurants) => {
+addMarkersToMap = (restaurants) => {
   restaurants.forEach(restaurant => {
     // Add marker to the map
     const marker = DBHelper.mapMarkerForRestaurant(restaurant, self.map);
@@ -255,17 +308,23 @@ addMarkersToMap = (restaurants = self.restaurants) => {
 }
 
 handleLikeButtonClick = (id,newState) => {
-  const fav = document.getElementById('fave-icon-' + id);
-  const idMinusOne = id - 1;
-  self.restaurants[idMinusOne]["is_favorite"] = newState;
+  DBHelper.fetchRestaurants((error, restaurants) => {
+    if (error) { // Got an error!
+      console.error(error);
+    } else {
+      const fav = document.getElementById('fave-icon-' + id);
+      const idMinusOne = id - 1;
+      restaurants[idMinusOne]["is_favorite"] = newState;
 
-  fav.style.background = newState
-    ? 'url("img/icons/like.svg") no-repeat'
-    : 'url("img/icons/like-not.svg") no-repeat';
-  newState
-    ? fav.setAttribute("aria-label", self.restaurants[idMinusOne].name + ' is a favorite.')
-    : fav.setAttribute("aria-label", self.restaurants[idMinusOne].name + ' is not a favorite.');
+      fav.style.background = newState
+        ? 'url("img/icons/like.svg") no-repeat'
+        : 'url("img/icons/like-not.svg") no-repeat';
+      newState
+        ? fav.setAttribute("aria-label", restaurants[idMinusOne].name + ' is a favorite.')
+        : fav.setAttribute("aria-label", restaurants[idMinusOne].name + ' is not a favorite.');
 
-  fav.onclick = event => handleLikeButtonClick(id, !newState);
-  handleFaveClick(id,newState);
+      fav.onclick = event => handleLikeButtonClick(id, !newState);
+      handleFaveClick(id,newState);
+    }
+  });
 }
