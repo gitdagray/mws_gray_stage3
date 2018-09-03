@@ -15,6 +15,51 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+window.addEventListener('offline', function(e) {
+  console.log('offline');
+  console.log(e);
+});
+
+window.addEventListener('online', function(e) {
+  console.log('online');
+
+  console.log('now online: sending new faves');
+  readAllData('sync-newFav')
+    .then(data => favEm(data))
+    .catch(e => {
+      console.log('Fave send failed');
+      console.error(e);
+    })
+
+  console.log('now online: sending new reviews');
+  readAllData('sync-newRev')
+    .then(data => postEm(data))
+    .catch(e => {
+      console.log('Review send failed');
+      console.error(e);
+    })
+});
+
+window.addEventListener('sendFave', function(e) {
+  console.log('immediate: sending new fave');
+  readAllData('sync-newFav')
+    .then(data => favEm(data))
+    .catch(e => {
+      console.log('Fave send failed');
+      console.error(e);
+    })
+});
+
+window.addEventListener('sendRev', function(e) {
+  console.log('immediate: sending new review');
+  readAllData('sync-newRev')
+    .then(data => postEm(data))
+    .catch(e => {
+      console.log('Post syncing failed');
+      console.error(e);
+    })
+});
+
 getFullDate = (ms) => {
   const myDate = new Date(ms);
   const month = myDate.getMonth() + 1;
@@ -48,6 +93,23 @@ window.onload = () => {
    document.getElementById('map-link').click();
  }
 
+ //check idb for anything not posted
+ console.log('looking in idb for faves...');
+ readAllData('sync-newFav')
+   .then(data => favEm(data))
+   .catch(e => {
+     console.log('Fave send failed');
+     console.error(e);
+   })
+
+ console.log('looking in idb for reviews...');
+ readAllData('sync-newRev')
+   .then(data => postEm(data))
+   .catch(e => {
+     console.log('Review send failed');
+     console.error(e);
+   })
+
  fetchRestaurantFromURL((error, restaurant) => {
    if (error) { // Got an error!
      console.error(error);
@@ -61,6 +123,7 @@ window.onload = () => {
      });
    }
  })
+
 }
 
 window.initMap = (restaurant) => {
@@ -79,35 +142,6 @@ window.initMap = (restaurant) => {
   restMap.setAttributeNode(altMap);
   restMap.setAttributeNode(indexMap);
 }
-
-/* Before going to Static Maps API this was used...
-/**
- * Initialize Google map, called from HTML.
- *
-window.initMap = () => {
-  fetchRestaurantFromURL((error, restaurant) => {
-    if (error) { // Got an error!
-      console.error(error);
-    } else {
-      self.map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 16,
-        center: restaurant.latlng,
-        scrollwheel: false
-      });
-      fillBreadcrumb();
-      DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
-      //add title to iframe for Google Map
-      google.maps.event.addListenerOnce(map, 'idle', () => {
-        document.getElementsByTagName('iframe')[0].title = "Google Maps";
-      })
-      fetchRestaurantReviewsFromURL((error, reviews) => {
-        if (error) { // Got an error!
-          console.error(error);
-        }
-      });
-    }
-  });
-} */
 
 /**
  * Get current restaurant from page URL.
@@ -451,7 +485,7 @@ fillReviewsHTML = (reviews = self.reviews) => {
     const ratingRevData = document.getElementById('newRevRating').value;
     const commentsRevData = document.getElementById('newRevComments').value;
 
-    if ('serviceWorker' in navigator && 'SyncManager' in window) {
+    if ('serviceWorker' in navigator) {
       navigator.serviceWorker.ready
       //testing the sendNewReview function
         .then(sw => {
@@ -463,12 +497,16 @@ fillReviewsHTML = (reviews = self.reviews) => {
           };
           console.log('newReviewData: ' + JSON.stringify(newReviewData));
           writeData('sync-newRev', newReviewData)
-            .then(() => sw.sync.register('sync-new-review'))
             .then(showReviewThankYou(nameRevData))
             .catch(err => console.log(err));
+        }).then(() => {
+            if(navigator.onLine){
+                var revEvent = new Event('sendRev');
+                window.dispatchEvent(revEvent);
+            }
         });
     } else {
-      sendNewReview(); //fallback if no support for SyncManager
+      sendNewReview(); //fallback if no support for serviceWorker
     }
   });
 

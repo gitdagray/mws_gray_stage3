@@ -19,15 +19,32 @@ if ('serviceWorker' in navigator) {
 
 window.addEventListener('offline', function(e) {
   console.log('offline');
+  console.log(e);
   document.getElementById('map').style.display = 'block';
   document.getElementById('mapInt').style.display = 'none';
 });
 
 window.addEventListener('online', function(e) {
   console.log('online');
+
+  console.log('now online: sending new faves');
+  readAllData('sync-newFav')
+    .then(data => favEm(data))
+    .catch(e => {
+      console.log('Fave send failed');
+      console.error(e);
+    })
 });
 
-
+window.addEventListener('sendFave', function(e) {
+  console.log('immediate: sending new faves');
+  readAllData('sync-newFav')
+    .then(data => favEm(data))
+    .catch(e => {
+      console.log('Fave send failed');
+      console.error(e);
+    })
+});
 
 /**
  * Allow user option to display map in mobile viewports
@@ -42,7 +59,7 @@ window.addEventListener('online', function(e) {
  /**
   * Map loading decision based upon viewport size
   */
-mapDecisions = () => {
+window.onload = () => {
   const size = {
     width: window.innerWidth || document.body.clientWidth,
     height: window.innerHeight || document.body.clientHeight
@@ -53,15 +70,32 @@ mapDecisions = () => {
     document.getElementById('map-link').click();
   }
 
+  //check idb for anything not posted
+  console.log('looking in idb for faves...');
+  readAllData('sync-newFav')
+    .then(data => favEm(data))
+    .catch(e => {
+      console.log('Fave send failed');
+      console.error(e);
+    })
+
+  console.log('looking in idb for reviews...');
+  readAllData('sync-newRev')
+    .then(data => postEm(data))
+    .catch(e => {
+      console.log('Review send failed');
+      console.error(e);
+    })
+
   DBHelper.fetchRestaurants((error, restaurants) => {
     if (error) { // Got an error!
       console.error(error);
     } else {
+      //load static map
       initMap(restaurants);
-      fillRestaurantsHTML(restaurants);
+      updateRestaurants();
     }
   });
-
 }
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
@@ -167,13 +201,16 @@ window.initInteractiveMap = () => {
   })
 }
 
+
 const switchMaps = () => {
-  initInteractiveMap();
-  document.getElementById('map').style.display = 'none';
-  document.getElementById('mapInt').style.display = 'block';
-  document.getElementById('map-container').removeEventListener('click',switchMaps);
-  document.getElementById('neighborhoods-select').removeEventListener('click',switchMaps);
-  document.getElementById('cuisines-select').removeEventListener('click',switchMaps);
+  if (navigator.onLine){
+    initInteractiveMap();
+    document.getElementById('map').style.display = 'none';
+    document.getElementById('mapInt').style.display = 'block';
+    document.getElementById('map-container').removeEventListener('click',switchMaps);
+    document.getElementById('neighborhoods-select').removeEventListener('click',switchMaps);
+    document.getElementById('cuisines-select').removeEventListener('click',switchMaps);
+  }
 }
 
 document.getElementById('map-container').addEventListener('click',switchMaps);
@@ -226,7 +263,9 @@ fillRestaurantsHTML = (restaurants) => {
   restaurants.forEach(restaurant => {
     ul.append(createRestaurantHTML(restaurant));
   });
-  addMarkersToMap(restaurants);
+  if(navigator.onLine){
+    addMarkersToMap(restaurants);
+  }
 }
 
 /**

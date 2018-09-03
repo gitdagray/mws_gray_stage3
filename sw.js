@@ -76,6 +76,19 @@ self.addEventListener('install', event => {
   );
 });
 
+/**
+ * Get the restaurant id from page URL.
+ */
+const getTheID = (url) => {
+  if (!url)
+    return;
+  let lastTwo = url.slice(-2);
+  if (lastTwo.includes('='))
+    lastTwo = lastTwo.slice(-1);
+  //console.log('lastTwo: ' + lastTwo);
+  return lastTwo;
+}
+
 // handle fetch requests
 self.addEventListener('fetch', event => {
 
@@ -153,109 +166,37 @@ self.addEventListener('fetch', event => {
 
       //not in either cache...
       //get response from network and store in dynamic cache
-      console.log('from network...');
-      console.log(url);
-      let options;
-      try{
-        //Google fonts need cors mode
-        if(event.request.url.indexOf('fonts.gstatic.com') > -1){
-          options = { mode: 'cors' };
-        } else {
-          options = { mode: 'no-cors' };
-        }
-        const response = await fetch(url,options);
-        if (response) {
-          const responseToNetwork = response.clone();
-          //only cache the Static Maps - the other Google Maps API floods the cache
-          if(event.request.url.indexOf('maps/api/staticmap') > -1){
-            dynamicCache.put(url, responseToNetwork);
+      if (navigator.onLine){
+        console.log('from network...');
+        console.log(url);
+        let options;
+        try{
+          //Google fonts need cors mode
+          if(event.request.url.indexOf('fonts.gstatic.com') > -1){
+            options = { mode: 'cors' };
+          } else {
+            options = { mode: 'no-cors' };
           }
+          const response = await fetch(url,options);
+          if (response) {
+            const responseToNetwork = response.clone();
+            //only cache the Static Maps - the other Google Maps API floods the cache
+            if(event.request.url.indexOf('maps/api/staticmap') > -1){
+              dynamicCache.put(url, responseToNetwork);
+            }
+          }
+          return response;
+        } catch(e) {
+          console.log('network error catch: ' + event.request.url);
+          console.error(e);
+          let errResponse = new Response({ "status" : 200 , "statusText" : "MyErrResponse!" });
+          return errResponse;
         }
-        return response;
-      } catch(e) {
-        console.log('network error catch');
-        console.error(e);
+      } else {
+        console.log('offline response: ' + event.request.url);
+        let offlineResponse = new Response({ "status" : 200 , "statusText" : "MyOfflineResponse!" });
+        return offlineResponse;
       }
 
   }()); //end event.respondWith
 }); //end addEventListener
-
-//triggered when sw thinks connectivity is re-established...
-self.addEventListener('sync', (event) => {
-  console.log('sw: sync', event);
-  if (event.tag === 'sync-new-review'){
-    console.log('sw: syncing new reviews');
-    event.waitUntil(
-      readAllData('sync-newRev')
-        .then(data => postEm(data))
-        .catch(e => {
-          console.log('Post syncing failed');
-          console.error(e);
-        })
-    );
-  } //end if
-  if (event.tag === 'sync-new-fave'){
-    console.log('sw: syncing new faves');
-    event.waitUntil(
-      readAllData('sync-newFav')
-        .then(data => favEm(data))
-        .catch(e => {
-          console.log('Fave syncing failed');
-          console.error(e);
-        })
-    );
-  } //end if
-
-});
-
-//must define this async function separately and insert in sync listener
-//so event.waitUntil() resolves
-//and sends the sync event when back online...
-const postEm = async(data) => {
-    for (let dt of data){
-      let dtResponse = await fetch('http://localhost:1337/reviews/',{
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          restaurant_id: dt.restaurant_id,
-          name: dt.name,
-          rating: dt.rating,
-          comments: dt.comments
-        })
-      }) //end fetch
-      let mydtReply = await dtResponse.json();
-      console.log('mydtReply: ' + JSON.stringify(mydtReply));
-      if (dtResponse.ok) {
-        deleteAnItem('sync-newRev',dt.id);
-      }
-    } //end for loop
-}
-
-const favEm = async(data) => {
-    for (let dt of data){
-      let dtResponse = await fetch(dt.url,{
-        method: 'PUT'
-      }) //end fetch
-      let mydtReply = await dtResponse.json();
-      console.log('mydtReply: ' + JSON.stringify(mydtReply));
-      if (dtResponse.ok) {
-        deleteAnItem('sync-newFav',dt.id);
-      }
-    } //end for loop
-}
-
-/**
- * Get the restaurant id from page URL.
- */
-const getTheID = (url) => {
-  if (!url)
-    return;
-  let lastTwo = url.slice(-2);
-  if (lastTwo.includes('='))
-    lastTwo = lastTwo.slice(-1);
-  //console.log('lastTwo: ' + lastTwo);
-  return lastTwo;
-}

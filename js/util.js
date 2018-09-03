@@ -53,15 +53,19 @@ function handleFaveClick(id,newState){
     : 'http://localhost:1337/restaurants/' + id + '/?is_favorite=false';
   console.log('faveURL: ' + faveURL);
 
-  //register sync here
-  if ('serviceWorker' in navigator && 'SyncManager' in window) {
-    console.log('sync reg route');
+  //Not using SyncManager - undependable
+  if ('serviceWorker' in navigator) {
+    console.log('writing to idb for fave click');
     navigator.serviceWorker.ready
     //testing the sendNewReview function
       .then(sw => {
         writeData('sync-newFav', {"url": faveURL})
-          .then(() => sw.sync.register('sync-new-fave'))
           .catch(err => console.log(err));
+      }).then(() => {
+          if(navigator.onLine){
+              var myEvent = new Event('sendFave');
+              window.dispatchEvent(myEvent);
+          }
       });
   } else {
     console.log('fallback route');
@@ -82,6 +86,42 @@ async function sendNewFave(url,id,newState) {
         console.log('Fave failed.');
         console.error(e);
       }
+}
+
+const favEm = async(data) => {
+    for (let dt of data){
+      let dtResponse = await fetch(dt.url,{
+        method: 'PUT'
+      }) //end fetch
+      let mydtReply = await dtResponse.json();
+      console.log('mydtReply: ' + JSON.stringify(mydtReply));
+      if (dtResponse.ok) {
+        deleteAnItem('sync-newFav',dt.id);
+      }
+    } //end for loop
+}
+
+const postEm = async(data) => {
+    for (let dt of data){
+      let dtResponse = await fetch('http://localhost:1337/reviews/',{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          restaurant_id: dt.restaurant_id,
+          name: dt.name,
+          rating: dt.rating,
+          comments: dt.comments
+        })
+      }) //end fetch
+      let mydtReply = await dtResponse.json();
+      console.log('mydtReply: ' + JSON.stringify(mydtReply));
+      if (dtResponse.ok) {
+        deleteAnItem('sync-newRev',dt.id);
+      }
+    } //end for loop
 }
 
 //get network data
@@ -108,6 +148,7 @@ async function getNetworkData(dataURL){
     }
   } catch(error) {
     console.log('getNetworkData: must be OFFLINE');
-    console.error(error);
+    //console.error(error);
+
   }
 }
