@@ -167,7 +167,7 @@ window.initMap = (restaurants) => {
   const indexMap = document.createAttribute("tabindex");
   //const latlngMap = restaurant.latlng.lat + ',' + restaurant.latlng.lng;
   let mapURL = 'https://maps.googleapis.com/maps/api/staticmap?';
-  mapURL = mapURL + '&size=640x640&scale=1&markers=color:red';
+  mapURL = mapURL + '&size=420x420&scale=1&markers=color:red';
   restaurants.forEach(restaurant => {
     mapURL = mapURL + '%7C' + restaurant.latlng.lat + ',' + restaurant.latlng.lng;
   });
