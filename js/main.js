@@ -34,6 +34,15 @@ window.addEventListener('online', function(e) {
       console.log('Fave send failed');
       console.error(e);
     })
+
+  console.log('looking in idb for reviews...');
+  readAllData('sync-newRev')
+    .then(data => postEm(data))
+    .catch(e => {
+      console.log('Review send failed');
+      console.error(e);
+    })
+
 });
 
 window.addEventListener('sendFave', function(e) {
@@ -42,16 +51,6 @@ window.addEventListener('sendFave', function(e) {
     .then(data => favEm(data))
     .catch(e => {
       console.log('Fave send failed');
-      console.error(e);
-    })
-});
-
-window.addEventListener('sendRev', function(e) {
-  console.log('immediate: sending new review');
-  readAllData('sync-newRev')
-    .then(data => postEm(data))
-    .catch(e => {
-      console.log('Review send failed');
       console.error(e);
     })
 });
