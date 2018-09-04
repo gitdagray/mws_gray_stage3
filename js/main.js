@@ -46,6 +46,16 @@ window.addEventListener('sendFave', function(e) {
     })
 });
 
+window.addEventListener('sendRev', function(e) {
+  console.log('immediate: sending new review');
+  readAllData('sync-newRev')
+    .then(data => postEm(data))
+    .catch(e => {
+      console.log('Review send failed');
+      console.error(e);
+    })
+});
+
 /**
  * Allow user option to display map in mobile viewports
  */

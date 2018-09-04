@@ -55,7 +55,7 @@ window.addEventListener('sendRev', function(e) {
   readAllData('sync-newRev')
     .then(data => postEm(data))
     .catch(e => {
-      console.log('Post syncing failed');
+      console.log('Review send failed');
       console.error(e);
     })
 });
