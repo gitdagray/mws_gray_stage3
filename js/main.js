@@ -2,7 +2,7 @@ let restaurants,
   neighborhoods,
   cuisines
 var map
-var markers = []
+//var markers = []
 
 /* Register serviceWorker */
 
@@ -201,7 +201,7 @@ window.initInteractiveMap = () => {
   })
 }
 
-
+/*
 const switchMaps = () => {
   if (navigator.onLine){
     initInteractiveMap();
@@ -216,7 +216,7 @@ const switchMaps = () => {
 document.getElementById('map-container').addEventListener('click',switchMaps);
 document.getElementById('neighborhoods-select').addEventListener('click',switchMaps);
 document.getElementById('cuisines-select').addEventListener('click',switchMaps);
-
+*/
 /**
  * Update page and map for current restaurants.
  */
@@ -249,9 +249,10 @@ resetRestaurants = (restaurants) => {
   const ul = document.getElementById('restaurants-list');
   ul.innerHTML = '';
 
+  /*
   // Remove all map markers
   self.markers.forEach(m => m.setMap(null));
-  self.markers = [];
+  self.markers = [];*/
   self.restaurants = restaurants;
 }
 
@@ -263,9 +264,10 @@ fillRestaurantsHTML = (restaurants) => {
   restaurants.forEach(restaurant => {
     ul.append(createRestaurantHTML(restaurant));
   });
+  /*
   if(navigator.onLine){
     addMarkersToMap(restaurants);
-  }
+  }*/
 }
 
 /**
@@ -334,7 +336,7 @@ createRestaurantHTML = (restaurant) => {
 
 /**
  * Add markers for current restaurants to the map.
- */
+ */ /*
 addMarkersToMap = (restaurants) => {
   restaurants.forEach(restaurant => {
     // Add marker to the map
@@ -344,7 +346,7 @@ addMarkersToMap = (restaurants) => {
     });
     self.markers.push(marker);
   });
-}
+} */
 
 handleLikeButtonClick = (id,newState) => {
   DBHelper.fetchRestaurants((error, restaurants) => {
