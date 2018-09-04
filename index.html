@@ -28,8 +28,7 @@
       </div>
     </section>
     <section id="map-container" role="region" aria-label="Google Map region.">
-      
-      <div tabindex=0 id="mapInt" role="application" aria-label="Google Map with restaurants."></div>
+      <div tabindex=0 id="map" role="application" aria-label="Google Map with restaurants."></div>
     </section>
     <section id="filter-results" tabindex=-1 role="region" aria-label="Filter restaurant reviews region.">
       <div class="filter-options" aria-label="Filter options.">
@@ -67,9 +66,7 @@
   <!-- Main javascript file -->
   <script type="application/javascript" charset="utf-8" src="js/main.min.js"></script>
   <!-- Google Maps -->
-
-  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA8iJ1AVyPPTXTKUDzwY8jrB04Ndhdxy0Q&callback=initInteractiveMap"></script>
-
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA8iJ1AVyPPTXTKUDzwY8jrB04Ndhdxy0Q&callback=mapDecisions"></script>
   <!-- copyright footer js -->
   <script>
     var d = new Date();

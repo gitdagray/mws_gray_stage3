@@ -20,8 +20,6 @@ if ('serviceWorker' in navigator) {
 window.addEventListener('offline', function(e) {
   console.log('offline');
   console.log(e);
-  document.getElementById('map').style.display = 'block';
-  document.getElementById('mapInt').style.display = 'none';
 });
 
 window.addEventListener('online', function(e) {
@@ -30,17 +28,17 @@ window.addEventListener('online', function(e) {
   console.log('now online: sending new faves');
   readAllData('sync-newFav')
     .then(data => favEm(data))
-    .catch(e => {
+    .catch(err => {
       console.log('Fave send failed');
-      console.error(e);
+      console.error(err);
     })
 
   console.log('now online: sending new reviews');
   readAllData('sync-newRev')
     .then(data => postEm(data))
-    .catch(e => {
+    .catch(err => {
       console.log('Review send failed');
-      console.error(e);
+      console.error(err);
     })
 
 });
@@ -49,9 +47,9 @@ window.addEventListener('sendFave', function(e) {
   console.log('immediate: sending new faves');
   readAllData('sync-newFav')
     .then(data => favEm(data))
-    .catch(e => {
+    .catch(err => {
       console.log('Fave send failed');
-      console.error(e);
+      console.error(err);
     })
 });
 
@@ -63,19 +61,22 @@ window.addEventListener('sendFave', function(e) {
    disLink.style.display = 'none';
    const mapContain = document.getElementById('map-container');
    mapContain.style.display = 'block';
+   initMap();
  });
 
  /**
   * Map loading decision based upon viewport size
   */
-window.onload = () => {
+mapDecisions = () => {
   const size = {
     width: window.innerWidth || document.body.clientWidth,
     height: window.innerHeight || document.body.clientHeight
   };
   //console.log("width: " + size.width);
   //console.log("height: " + size.height);
-  if (size.width > 800){
+  if (size.width < 801){
+    updateRestaurants();
+  } else {
     document.getElementById('map-link').click();
   }
 
@@ -83,30 +84,20 @@ window.onload = () => {
   console.log('looking in idb for faves...');
   readAllData('sync-newFav')
     .then(data => favEm(data))
-    .catch(e => {
+    .catch(err => {
       console.log('Fave send failed');
-      console.error(e);
+      console.error(err);
     })
 
   console.log('looking in idb for reviews...');
   readAllData('sync-newRev')
     .then(data => postEm(data))
-    .catch(e => {
+    .catch(err => {
       console.log('Review send failed');
-      console.error(e);
+      console.error(err);
     })
-
-  DBHelper.fetchRestaurants((error, restaurants) => {
-    if (error) { // Got an error!
-      console.error(error);
-    } else {
-      //load static map
-      initMap(restaurants);
-      updateRestaurants();
-    }
-  });
-
 }
+
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
  */
@@ -170,48 +161,15 @@ fillCuisinesHTML = (cuisines = self.cuisines) => {
   });
 }
 
-window.initMap = (restaurants) => {
-
-  const mapCon = document.getElementById('map-container');
-  const restMap = document.createElement('img');
-  restMap.id = 'map';
-
-  const srcMap = document.createAttribute("src");
-  const altMap = document.createAttribute("alt");
-  const indexMap = document.createAttribute("tabindex");
-  //const latlngMap = restaurant.latlng.lat + ',' + restaurant.latlng.lng;
-  let mapURL = 'https://maps.googleapis.com/maps/api/staticmap?';
-  mapURL = mapURL + '&size=320x320&scale=1&markers=color:red';
-  restaurants.forEach(restaurant => {
-    mapURL = mapURL + '%7C' + restaurant.latlng.lat + ',' + restaurant.latlng.lng;
-  });
-  mapURL = mapURL + '&key=AIzaSyA8iJ1AVyPPTXTKUDzwY8jrB04Ndhdxy0Q';
-  console.log(mapURL);
-
-  fetch(mapURL,{ mode: 'no-cors' })
-  .then(function(response) {
-    srcMap.value = mapURL;
-    altMap.value = 'A map showing all the restaurants in the Restaurant Reviews App.';
-    indexMap.value = 0;
-    restMap.setAttributeNode(srcMap);
-  })
-  .catch(err => console.log(err));
-
-  restMap.setAttributeNode(altMap);
-  restMap.setAttributeNode(indexMap);
-  mapCon.append(restMap);
-
-}
-
 /**
  * Initialize Google map, called from HTML.
 */
-window.initInteractiveMap = () => {
+window.initMap = () => {
   let loc = {
     lat: 40.722216,
     lng: -73.987501
   };
-  self.map = new google.maps.Map(document.getElementById('mapInt'), {
+  self.map = new google.maps.Map(document.getElementById('map'), {
     zoom: 12,
     center: loc,
     scrollwheel: false
@@ -223,22 +181,6 @@ window.initInteractiveMap = () => {
   })
 }
 
-/*
-const switchMaps = () => {
-  if (navigator.onLine){
-    initInteractiveMap();
-    document.getElementById('map').style.display = 'none';
-    document.getElementById('mapInt').style.display = 'block';
-    document.getElementById('map-container').removeEventListener('click',switchMaps);
-    document.getElementById('neighborhoods-select').removeEventListener('click',switchMaps);
-    document.getElementById('cuisines-select').removeEventListener('click',switchMaps);
-  }
-}
-
-document.getElementById('map-container').addEventListener('click',switchMaps);
-document.getElementById('neighborhoods-select').addEventListener('click',switchMaps);
-document.getElementById('cuisines-select').addEventListener('click',switchMaps);
-*/
 /**
  * Update page and map for current restaurants.
  */
@@ -257,7 +199,7 @@ updateRestaurants = () => {
       console.error(error);
     } else {
       resetRestaurants(restaurants);
-      fillRestaurantsHTML(restaurants);
+      fillRestaurantsHTML();
     }
   })
 }
@@ -271,25 +213,24 @@ resetRestaurants = (restaurants) => {
   const ul = document.getElementById('restaurants-list');
   ul.innerHTML = '';
 
-  /*
   // Remove all map markers
-  self.markers.forEach(m => m.setMap(null));
-  self.markers = [];*/
+  if(self.markers){
+    self.markers.forEach(m => m.setMap(null));
+  }
+  self.markers = [];
   self.restaurants = restaurants;
 }
 
 /**
  * Create all restaurants HTML and add them to the webpage.
  */
-fillRestaurantsHTML = (restaurants) => {
+fillRestaurantsHTML = (restaurants = self.restaurants) => {
   const ul = document.getElementById('restaurants-list');
   restaurants.forEach(restaurant => {
     ul.append(createRestaurantHTML(restaurant));
   });
-  /*
-  if(navigator.onLine){
-    addMarkersToMap(restaurants);
-  }*/
+
+  addMarkersToMap();
 }
 
 /**
@@ -358,8 +299,8 @@ createRestaurantHTML = (restaurant) => {
 
 /**
  * Add markers for current restaurants to the map.
- */ /*
-addMarkersToMap = (restaurants) => {
+ */
+addMarkersToMap = (restaurants = self.restaurants) => {
   restaurants.forEach(restaurant => {
     // Add marker to the map
     const marker = DBHelper.mapMarkerForRestaurant(restaurant, self.map);
@@ -368,7 +309,7 @@ addMarkersToMap = (restaurants) => {
     });
     self.markers.push(marker);
   });
-} */
+}
 
 handleLikeButtonClick = (id,newState) => {
   DBHelper.fetchRestaurants((error, restaurants) => {

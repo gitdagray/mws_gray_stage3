@@ -148,19 +148,13 @@ nav h1 a {
 
 /* ====================== Map ====================== */
 
-#mapInt, #map {
+#map {
   height: 220px;
   width: 100%;
   background-color: #ccc;
   max-width: 1600px;
   margin: 0 auto;
-  display: none;
-}
-
-#map {
   display: block;
-  height: 320px;
-  width: 320px;
 }
 
 #map-container {
@@ -305,19 +299,6 @@ nav h1 a {
 }
 
 /* =========== Media Queries =========== */
-@media screen and (min-width: 360px) {
-	#map {
-	  height: 360px;
-    width: 360px;
-	}
-}
-
-@media screen and (min-width: 375px) {
-	#map {
-	  height: 375px;
-    width: 375px;
-	}
-}
 
 @media screen and (min-width: 485px) {
 	.linebreak {
@@ -332,8 +313,14 @@ nav h1 a {
 }
 
 @media screen and (min-height: 565px) {
-	#mapInt {
+	.inside #map, #map {
 	  height: 320px;
+	}
+}
+
+@media screen and (min-height: 640px) {
+	.inside #map, #map {
+	  height: 420px;
 	}
 }
 
