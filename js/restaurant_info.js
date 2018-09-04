@@ -133,7 +133,7 @@ window.initMap = (restaurant) => {
   const indexMap = document.createAttribute("tabindex");
   const latlngMap = restaurant.latlng.lat + ',' + restaurant.latlng.lng;
   let mapURL = 'https://maps.googleapis.com/maps/api/staticmap?center=';
-  mapURL = mapURL + latlngMap + '&zoom=16&size=300x300&scale=1&markers=color:red%7C';
+  mapURL = mapURL + latlngMap + '&zoom=16&size=320x320&scale=1&markers=color:red%7C';
   mapURL = mapURL + latlngMap + '&key=AIzaSyA8iJ1AVyPPTXTKUDzwY8jrB04Ndhdxy0Q';
   srcMap.value = mapURL;
   altMap.value = 'A map for ' + restaurant.name;

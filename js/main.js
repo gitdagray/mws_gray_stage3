@@ -96,6 +96,7 @@ window.onload = () => {
       updateRestaurants();
     }
   });
+
 }
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
@@ -161,24 +162,36 @@ fillCuisinesHTML = (cuisines = self.cuisines) => {
 }
 
 window.initMap = (restaurants) => {
-  const restMap = document.getElementById('map');
+
+  const mapCon = document.getElementById('map-container');
+  const restMap = document.createElement('img');
+  restMap.id = 'map';
+
   const srcMap = document.createAttribute("src");
   const altMap = document.createAttribute("alt");
   const indexMap = document.createAttribute("tabindex");
   //const latlngMap = restaurant.latlng.lat + ',' + restaurant.latlng.lng;
   let mapURL = 'https://maps.googleapis.com/maps/api/staticmap?';
-  mapURL = mapURL + '&size=300x300&scale=1&markers=color:red';
+  mapURL = mapURL + '&size=320x320&scale=1&markers=color:red';
   restaurants.forEach(restaurant => {
     mapURL = mapURL + '%7C' + restaurant.latlng.lat + ',' + restaurant.latlng.lng;
   });
   mapURL = mapURL + '&key=AIzaSyA8iJ1AVyPPTXTKUDzwY8jrB04Ndhdxy0Q';
   console.log(mapURL);
-  srcMap.value = mapURL;
-  altMap.value = 'A map showing all the restaurants in the Restaurant Reviews App.';
-  indexMap.value = 0;
-  restMap.setAttributeNode(srcMap);
+
+  fetch(mapURL,{ mode: 'no-cors' })
+  .then(function(response) {
+    srcMap.value = mapURL;
+    altMap.value = 'A map showing all the restaurants in the Restaurant Reviews App.';
+    indexMap.value = 0;
+    restMap.setAttributeNode(srcMap);
+  })
+  .catch(err => console.log(err));
+
   restMap.setAttributeNode(altMap);
   restMap.setAttributeNode(indexMap);
+  mapCon.append(restMap);
+
 }
 
 /**

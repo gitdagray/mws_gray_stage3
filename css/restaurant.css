@@ -480,6 +480,20 @@ nav h1 a {
 
 /* =========== Media Queries =========== */
 
+@media screen and (min-width: 360px) {
+	#map {
+	  height: 360px;
+    width: 360px;
+	}
+}
+
+@media screen and (min-width: 375px) {
+	#map {
+	  height: 375px;
+    width: 375px;
+	}
+}
+
 @media screen and (min-width: 485px) {
 	.linebreak {
 		display: none;
@@ -494,32 +508,11 @@ nav h1 a {
     letter-spacing: 6px;
 }
 
-@media screen and (min-width: 360px) {
-	.inside #map, #map {
-	  height: 360px;
-    width: 360px;
-	}
-}
-
-@media screen and (min-height: 640px) {
-	.inside #map, #map {
-	  height: 420px;
-    width: 420px;
-	}
-}
-
 @media screen and (min-width: 756px) {
   nav h1 a {
     font-size: 32px;
   }
 }
-
-/*
-@media screen and (min-width: 900px) {
-	#reviews-container h2 {
-		margin: 0 auto 10px;
-	}
-}*/
 
 @media screen and (min-width: 1024px) {
   .inside main {
