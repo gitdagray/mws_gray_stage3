@@ -180,10 +180,7 @@ self.addEventListener('fetch', event => {
           const response = await fetch(url,options);
           if (response) {
             const responseToNetwork = response.clone();
-            //only cache the Static Maps - the other Google Maps API floods the cache
-            if(event.request.url.indexOf('maps/api/staticmap') > -1){
-              dynamicCache.put(url, responseToNetwork);
-            }
+            dynamicCache.put(url, responseToNetwork);
           }
           return response;
         } catch(e) {

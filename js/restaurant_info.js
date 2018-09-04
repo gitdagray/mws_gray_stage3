@@ -26,17 +26,17 @@ window.addEventListener('online', function(e) {
   console.log('now online: sending new faves');
   readAllData('sync-newFav')
     .then(data => favEm(data))
-    .catch(e => {
+    .catch(err => {
       console.log('Fave send failed');
-      console.error(e);
+      console.error(err);
     })
 
   console.log('now online: sending new reviews');
   readAllData('sync-newRev')
     .then(data => postEm(data))
-    .catch(e => {
+    .catch(err => {
       console.log('Review send failed');
-      console.error(e);
+      console.error(err);
     })
 });
 
@@ -44,9 +44,9 @@ window.addEventListener('sendFave', function(e) {
   console.log('immediate: sending new fave');
   readAllData('sync-newFav')
     .then(data => favEm(data))
-    .catch(e => {
+    .catch(err => {
       console.log('Fave send failed');
-      console.error(e);
+      console.error(err);
     })
 });
 
@@ -54,9 +54,9 @@ window.addEventListener('sendRev', function(e) {
   console.log('immediate: sending new review');
   readAllData('sync-newRev')
     .then(data => postEm(data))
-    .catch(e => {
+    .catch(err => {
       console.log('Review send failed');
-      console.error(e);
+      console.error(err);
     })
 });
 
@@ -81,8 +81,7 @@ getFullDate = (ms) => {
 /**
  * Map loading decision based upon viewport size
  */
-//mapDecisions = () => {
-window.onload = () => {
+mapDecisions = () => {
  const size = {
    width: window.innerWidth || document.body.clientWidth,
    height: window.innerHeight || document.body.clientHeight
@@ -93,54 +92,47 @@ window.onload = () => {
    document.getElementById('map-link').click();
  }
 
+ initMap();
+
  //check idb for anything not posted
  console.log('looking in idb for faves...');
  readAllData('sync-newFav')
    .then(data => favEm(data))
-   .catch(e => {
+   .catch(err => {
      console.log('Fave send failed');
-     console.error(e);
+     console.error(err);
    })
 
  console.log('looking in idb for reviews...');
  readAllData('sync-newRev')
    .then(data => postEm(data))
-   .catch(e => {
+   .catch(err => {
      console.log('Review send failed');
-     console.error(e);
+     console.error(err);
    })
-
- fetchRestaurantFromURL((error, restaurant) => {
-   if (error) { // Got an error!
-     console.error(error);
-   } else {
-     fillBreadcrumb();
-     initMap(restaurant);
-     fetchRestaurantReviewsFromURL((error, reviews) => {
-       if (error) { // Got an error!
-         console.error(error);
-       }
-     });
-   }
- })
-
 }
 
-window.initMap = (restaurant) => {
-  const restMap = document.getElementById('map');
-  const srcMap = document.createAttribute("src");
-  const altMap = document.createAttribute("alt");
-  const indexMap = document.createAttribute("tabindex");
-  const latlngMap = restaurant.latlng.lat + ',' + restaurant.latlng.lng;
-  let mapURL = 'https://maps.googleapis.com/maps/api/staticmap?center=';
-  mapURL = mapURL + latlngMap + '&zoom=16&size=320x320&scale=1&markers=color:red%7C';
-  mapURL = mapURL + latlngMap + '&key=AIzaSyA8iJ1AVyPPTXTKUDzwY8jrB04Ndhdxy0Q';
-  srcMap.value = mapURL;
-  altMap.value = 'A map for ' + restaurant.name;
-  indexMap.value = 0;
-  restMap.setAttributeNode(srcMap);
-  restMap.setAttributeNode(altMap);
-  restMap.setAttributeNode(indexMap);
+/**
+ * Initialize Google map, called from HTML.
+ */
+window.initMap = () => {
+  fetchRestaurantFromURL((error, restaurant) => {
+    if (error) { // Got an error!
+      console.error(error);
+    } else {
+      self.map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 16,
+        center: restaurant.latlng,
+        scrollwheel: false
+      });
+      fillBreadcrumb();
+      DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
+      //add title to iframe for Google Map
+      google.maps.event.addListenerOnce(map, 'idle', () => {
+        document.getElementsByTagName('iframe')[0].title = "Google Maps";
+      })
+    }
+  });
 }
 
 /**
@@ -220,8 +212,9 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   if (restaurant.operating_hours) {
     fillRestaurantHoursHTML();
   }
-  // fill reviews
-  //fillReviewsHTML();
+
+  //get reviews
+  fetchRestaurantReviewsFromURL();
 }
 
 /**
@@ -267,13 +260,14 @@ fetchRestaurantReviewsFromURL = (callback) => {
     callback(error, null);
   } else {
     DBHelper.fetchReviewsByRestaurantId(restaurant_id, (error, reviews) => {
-      self.reviews = reviews;
+
       if (!reviews) {
         console.error(error);
         return;
+      } else {
+        self.reviews = reviews;
+        fillReviewsHTML();
       }
-      fillReviewsHTML();
-      callback(null, reviews)
     });
   }
 }
@@ -487,7 +481,6 @@ fillReviewsHTML = (reviews = self.reviews) => {
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.ready
-      //testing the sendNewReview function
         .then(sw => {
           const newReviewData = {
             "restaurant_id": idRevData,

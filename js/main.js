@@ -35,7 +35,7 @@ window.addEventListener('online', function(e) {
       console.error(e);
     })
 
-  console.log('looking in idb for reviews...');
+  console.log('now online: sending new reviews');
   readAllData('sync-newRev')
     .then(data => postEm(data))
     .catch(e => {

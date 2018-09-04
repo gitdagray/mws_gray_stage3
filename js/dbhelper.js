@@ -76,9 +76,9 @@ class DBHelper {
       const reviews = await response.json();
       console.log(reviews);
       callback(null, reviews);
-    } catch(e) {
-      console.error(e);
-      const error = ('Request failed. ' + e);
+    } catch(err) {
+      console.error(err);
+      const error = ('Request failed. ' + err);
       callback(error, null);
     }
   }
